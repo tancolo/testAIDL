@@ -1,7 +1,6 @@
 package com.example.myserviceapp
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
@@ -11,8 +10,16 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myserviceapp.aidl.TestAidlServer
+import com.example.myserviceapp.aidl.TestAidlServiceConnection
+import com.example.myserviceapp.aidl.TestStudentServer
+import com.example.myserviceapp.aidl.TestStudentServiceConnection
+import com.example.myserviceapp.messenger.TestMessengerServer
+import com.example.myserviceapp.messenger.TestMessengerServiceConnection
 import com.example.myserviceapp.service.MyBinder
 import com.example.myserviceapp.service.MyService
+import com.example.myserviceapp.testbinder.TestServer
+import com.example.myserviceapp.testbinder.TestServiceConnection
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,6 +27,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mService: MyService
     private lateinit var mTextView: TextView
     private lateinit var mServiceConnection: ServiceConnection
+    private lateinit var mTestServiceConnection: TestServiceConnection
+    private lateinit var mAidlServiceConnection: TestAidlServiceConnection
+    private lateinit var mStudentServiceConnection: TestStudentServiceConnection
+
+    private lateinit var mMessengerServiceConnection: TestMessengerServiceConnection
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +47,22 @@ class MainActivity : AppCompatActivity() {
         buttonStart.setOnClickListener {
             Log.d(TAG, "click start button")
             // 1.
-            startService(intent)
+            //startService(intent)
 
             // 2. bind service
-            //bindService()
+//            bindService()
+
+            // 3. bind TestServer
+//            bindTestServer()
+
+            // 4. aidl server
+//            bindAidlServer()
+
+            // 5. student adil
+//            bindStudentServer()
+
+            // 6. messenger
+            bindMessengerServer()
         }
 
         val buttonStop: Button = findViewById(R.id.button_stop_service)
@@ -46,12 +70,63 @@ class MainActivity : AppCompatActivity() {
             override fun onClick(v: View?) {
                 Log.d(TAG, "click stop button")
                 // 1. stop server
-                stopService(intent)
+                //stopService(intent)
 
                 // 2. unbind service
-                //unBindService()
+//                unBindService()
+
+                // 3. unbind testServer
+//                unbindTestServer()
+
+                // 4. unbind aidl server
+//                unbindAidlServer()
+
+                // 5. unbind student server
+                unbindStudentServer()
             }
         })
+    }
+
+    private fun bindMessengerServer() {
+        val intent = Intent(this, TestMessengerServer::class.java)
+        mMessengerServiceConnection = TestMessengerServiceConnection()
+        bindService(intent, mMessengerServiceConnection, BIND_AUTO_CREATE)
+    }
+
+    private fun unbindMessengerServer() {
+        unbindService(mMessengerServiceConnection)
+    }
+
+    private fun unbindStudentServer() {
+        unbindService(mStudentServiceConnection)
+    }
+
+    private fun bindStudentServer() {
+        val intent = Intent(this, TestStudentServer::class.java)
+        mStudentServiceConnection = TestStudentServiceConnection()
+        bindService(intent, mStudentServiceConnection, BIND_AUTO_CREATE)
+    }
+
+    private fun unbindAidlServer() {
+        unbindService(mAidlServiceConnection)
+    }
+
+    private fun bindAidlServer() {
+        val intent = Intent(this, TestAidlServer::class.java)
+        mAidlServiceConnection = TestAidlServiceConnection()
+        bindService(intent, mAidlServiceConnection, BIND_AUTO_CREATE)
+    }
+
+    private fun unbindTestServer() {
+        Log.d(TAG, "unBindTestServer()...")
+        unbindService(mTestServiceConnection)
+    }
+
+    private fun bindTestServer() {
+        Log.d(TAG, "bindTestServer()...")
+        mTestServiceConnection = TestServiceConnection()
+        val intent = Intent(this, TestServer::class.java)
+        this.bindService(intent, mTestServiceConnection, BIND_AUTO_CREATE)
     }
 
     private fun bindService() {

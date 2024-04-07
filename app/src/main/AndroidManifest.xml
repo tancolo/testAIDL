@@ -21,8 +21,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".service.MyService"
+        <service android:name=".service.MyService" />
+        <service android:name=".testbinder.TestServer"
             android:process=":hello"/>
+
+        <service android:name=".aidl.TestAidlServer"
+            android:process=":aidl"/>
+
+        <service android:name=".aidl.TestStudentServer"
+            android:process=":student"/>
+
+        <service android:name=".messenger.TestMessengerServer"
+            android:process=":messenger"/>
+
     </application>
 
 </manifest>

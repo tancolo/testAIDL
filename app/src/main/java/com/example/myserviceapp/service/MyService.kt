@@ -15,7 +15,7 @@ class MyService : Service() {
         Log.d(TAG, "MyService onCreate()")
 
         //startThreadForCounting()
-        testANR()
+        //testANR()
     }
 
     override fun onStart(intent: Intent?, startId: Int) {
