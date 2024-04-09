@@ -1,12 +1,20 @@
 package com.example.myserviceapp
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Color
+import android.graphics.PixelFormat
+import android.graphics.drawable.ColorDrawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -107,6 +115,103 @@ class MainActivity : AppCompatActivity() {
                 unbindStudentCallbackService()
             }
         })
+
+        val buttonShowWindow = findViewById<Button>(R.id.button_show_window)
+        buttonShowWindow.setOnClickListener {
+            // 8. show window with textView
+            grantPermissionAndShowWindow()
+        }
+    }
+
+    // 8. grant the permission
+    private fun grantPermissionAndShowWindow() {
+        // by ChatGPT
+        // Inside your activity or fragment
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            // If the permission has not been granted yet, request it
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")
+            )
+            startActivityForResult(intent, SYSTEM_ALERT_WINDOW_PERMISSION)
+        } else {
+            // Permission has already been granted, proceed with adding the view
+            createWindowWithTextView(this)
+        }
+    }
+
+    // code was created by ChatGPT
+    private val SYSTEM_ALERT_WINDOW_PERMISSION = 2038 // Define a constant for the permission request code
+
+    // Handle the result of the permission request
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SYSTEM_ALERT_WINDOW_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                // Permission granted, proceed with adding the view
+                createWindowWithTextView(this)
+            } else {
+                // Permission not granted, handle it accordingly (e.g., show a message to the user)
+                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun createWindowWithTextView(context: Context) {
+        // Create a WindowManager instance
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+        // Create a LayoutParams object to define the window attributes
+        val layoutParams = WindowManager.LayoutParams(
+            400, // Width of the window
+            400, // Height of the window
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            } else {
+                WindowManager.LayoutParams.TYPE_PHONE
+            }, // Type of the window
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Flags
+            PixelFormat.RGBA_8888 // Format
+        )
+
+        // Set window gravity
+//        layoutParams.gravity = Gravity.CENTER
+
+        // Create a TextView
+        val textView = TextView(context)
+        textView.text = "This is a sample TextView"
+        textView.background = ColorDrawable(Color.WHITE)
+        // You can customize other properties of the TextView here
+
+        // Add the TextView to the WindowManager
+        windowManager.addView(textView, layoutParams)
+    }
+
+
+    private fun showWindow() {
+        val wm: WindowManager =
+            application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val layoutParams = WindowManager.LayoutParams()
+        layoutParams.height = 400
+        layoutParams.width = 400
+        layoutParams.format = PixelFormat.RGBA_8888
+        layoutParams.flags =
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            }
+
+            else -> layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE
+        }
+
+        val textView = TextView(this)
+        textView.background = ColorDrawable(Color.RED)
+        textView.text = "Hello WindowManager"
+
+        wm.addView(textView, layoutParams)
+
     }
 
     // 7. bind and unbind student service and register the callback
@@ -116,7 +221,9 @@ class MainActivity : AppCompatActivity() {
             override fun onCallback(student: Student?) {
                 Log.d(TAG, "callback student: $student")
                 runOnUiThread {
-                    Toast.makeText(this@MainActivity, "client receive change: $student", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity, "client receive change: $student", Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -198,7 +305,7 @@ class MainActivity : AppCompatActivity() {
     private fun bindService() {
         mServiceConnection = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName, service: IBinder) {
-                Log.d(TAG, "onServiceConnected, name: ${name.toString()}")
+                Log.d(TAG, "onServiceConnected, name: $name")
                 //service即是从onBind(xx)方法返回的(绑定者和Service同一进程)
                 val myBinder = service as MyBinder
                 //获取Service的引用
@@ -210,7 +317,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onServiceDisconnected(name: ComponentName) {
                 //Service被销毁时调用(内存不足等，正常解绑不会走这)
-                Log.d(TAG, "onServiceDisconnected, name: ${name.toString()}")
+                Log.d(TAG, "onServiceDisconnected, name: $name")
             }
 
             override fun onBindingDied(name: ComponentName?) {

@@ -5,4 +5,5 @@
     <string name="start_service_bind">start service with onBind</string>
     <string name="stop_service_bind">stop service with unBind</string>
     <string name="show_random_number">Show Random Number</string>
+    <string name="show_window">Show Window</string>
 </resources>
