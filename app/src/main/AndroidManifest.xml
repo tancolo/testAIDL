@@ -34,6 +34,9 @@
         <service android:name=".messenger.TestMessengerServer"
             android:process=":messenger"/>
 
+        <service android:name=".aidlcallback.StudentService"
+            android:process=":studentService"/>
+
     </application>
 
 </manifest>

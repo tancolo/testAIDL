@@ -9,11 +9,16 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myserviceapp.aidl.TestAidlServer
 import com.example.myserviceapp.aidl.TestAidlServiceConnection
 import com.example.myserviceapp.aidl.TestStudentServer
 import com.example.myserviceapp.aidl.TestStudentServiceConnection
+import com.example.myserviceapp.aidlcallback.RemoteCallback
+import com.example.myserviceapp.aidlcallback.Student
+import com.example.myserviceapp.aidlcallback.StudentCallbackServiceConnection
+import com.example.myserviceapp.aidlcallback.StudentService
 import com.example.myserviceapp.messenger.TestMessengerServer
 import com.example.myserviceapp.messenger.TestMessengerServiceConnection
 import com.example.myserviceapp.service.MyBinder
@@ -32,6 +37,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mStudentServiceConnection: TestStudentServiceConnection
 
     private lateinit var mMessengerServiceConnection: TestMessengerServiceConnection
+
+    private lateinit var mStudentCallbackServiceConnection: StudentCallbackServiceConnection
+//    private lateinit var mRemoteCallback: RemoteCallback.Stub
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +70,19 @@ class MainActivity : AppCompatActivity() {
 //            bindStudentServer()
 
             // 6. messenger
-            bindMessengerServer()
+//            bindMessengerServer()
+
+            // 7. student callback service
+//            bindStudentCallbackService()
+
         }
+
+        buttonStart.setOnLongClickListener {
+            Log.d(TAG, "onLongClickListener")
+//            false
+            true
+        }
+
 
         val buttonStop: Button = findViewById(R.id.button_stop_service)
         buttonStop.setOnClickListener(object : View.OnClickListener {
@@ -82,10 +101,57 @@ class MainActivity : AppCompatActivity() {
 //                unbindAidlServer()
 
                 // 5. unbind student server
-                unbindStudentServer()
+//                unbindStudentServer()
+
+                // 7. unbind student callback server
+                unbindStudentCallbackService()
             }
         })
     }
+
+    // 7. bind and unbind student service and register the callback
+    private fun bindStudentCallbackService() {
+
+        val remoteCallback = object : RemoteCallback.Stub() {
+            override fun onCallback(student: Student?) {
+                Log.d(TAG, "callback student: $student")
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "client receive change: $student", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        mStudentCallbackServiceConnection = StudentCallbackServiceConnection(remoteCallback)
+
+        val intent = Intent(this, StudentService::class.java)
+        Log.d(TAG, "call bindService(), intent: $intent")
+        bindService(intent, mStudentCallbackServiceConnection, BIND_AUTO_CREATE)
+
+//        Intent().let {
+//
+//            val remoteCallback = object : RemoteCallback.Stub() {
+//                override fun onCallback(student: Student?) {
+//                    Log.d(TAG, "callback student: $student")
+//                    runOnUiThread {
+//                        Toast.makeText(this@MainActivity, "client receive change: $student", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            }
+//            mStudentCallbackServiceConnection = StudentCallbackServiceConnection(remoteCallback)
+//
+//            it.setComponent(ComponentName("com.example.myserviceapp.aidlcallback",
+//                "com.example.myserviceapp.aidlcallback.StudentService"))
+//        }.also {
+//            Log.d(TAG, "call bindService(), intent: $it")
+//            bindService(it, mStudentCallbackServiceConnection, BIND_AUTO_CREATE)
+//        }
+
+    }
+
+    private fun unbindStudentCallbackService() {
+        unbindService(mStudentCallbackServiceConnection)
+    }
+
+    // end 7.
 
     private fun bindMessengerServer() {
         val intent = Intent(this, TestMessengerServer::class.java)
