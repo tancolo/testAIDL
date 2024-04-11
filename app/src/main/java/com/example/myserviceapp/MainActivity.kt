@@ -1,5 +1,6 @@
 package com.example.myserviceapp
 
+import android.app.Dialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -13,11 +14,16 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myserviceapp.aidl.TestAidlServer
 import com.example.myserviceapp.aidl.TestAidlServiceConnection
@@ -33,6 +39,7 @@ import com.example.myserviceapp.service.MyBinder
 import com.example.myserviceapp.service.MyService
 import com.example.myserviceapp.testbinder.TestServer
 import com.example.myserviceapp.testbinder.TestServiceConnection
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,6 +54,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mMessengerServiceConnection: TestMessengerServiceConnection
 
     private lateinit var mStudentCallbackServiceConnection: StudentCallbackServiceConnection
+
+    private lateinit var mWindowManager: WindowManager
+    private lateinit var mWindowTextView: TextView
+
 //    private lateinit var mRemoteCallback: RemoteCallback.Stub
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,12 +127,107 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        // 8. show/dismiss window with textView
         val buttonShowWindow = findViewById<Button>(R.id.button_show_window)
         buttonShowWindow.setOnClickListener {
-            // 8. show window with textView
             grantPermissionAndShowWindow()
         }
+        val buttonDismissWindow = findViewById<Button>(R.id.button_dismiss_window)
+        buttonDismissWindow.setOnClickListener {
+            dismissWindow()
+        }
+
+        // 9-1) show alert dialog
+        findViewById<Button>(R.id.button_show_dialog).setOnClickListener {
+            showAlertDialog()
+        }
+
+        // 9-2) custom dialog
+        findViewById<Button>(R.id.button_show_custom_dialog).setOnClickListener {
+            showCustomDialog()
+        }
+
+        // 10. popupWindow
+        findViewById<Button>(R.id.button_show_popupwindow).setOnClickListener {
+            showPopupWindow(it)
+        }
+
+        // 11. Toast
+        findViewById<Button>(R.id.button_toast).setOnClickListener {
+            showToast()
+        }
+
     }
+
+    // 11. show toast
+    private fun showToast() {
+        val toast = Toast.makeText(this, "this is a toast", Toast.LENGTH_SHORT)
+        toast.setGravity(Gravity.TOP, 100, 100)
+        toast.show()
+    }
+
+    // 10. popup window
+    private fun showPopupWindow(view: View) {
+        val inflaterView = LayoutInflater.from(this).inflate(R.layout.custom_dialog_layout, null)
+        val linearLayout = inflaterView.findViewById<LinearLayout>(R.id.linear_layout)
+        val okButton = inflaterView.findViewById<Button>(R.id.okButton)
+        val popupWindow = PopupWindow(400, 400)
+        popupWindow.contentView = linearLayout
+
+        //设置focusable为true即可点击外部消失PopupWindow，反之则不消失
+        popupWindow.isFocusable = true
+
+//        popupWindow.showAsDropDown(view)
+        //popupWindow.showAsDropDown(view, 100, 200, Gravity.CENTER_HORIZONTAL)
+        popupWindow.showAtLocation(view, Gravity.END, 200, 100)
+
+        okButton.setOnClickListener {
+            popupWindow.dismiss()
+        }
+    }
+
+    // 9-2) customize dialog
+    private fun showCustomDialog() {
+        //1. CustomDialog(this).show()
+
+        //2. custom view
+        // Inflate the layout XML file
+        val inflater = LayoutInflater.from(this)
+        val inflaterView = inflater.inflate(R.layout.custom_dialog_layout, null) as LinearLayout
+        val button = inflaterView.findViewById<Button>(R.id.okButton)
+
+        println(inflaterView)
+        println(button)
+
+        val dialog = Dialog(this)
+        dialog.setContentView(inflaterView)
+        // Dialog 外部变暗
+        dialog.window?.attributes?.dimAmount = 0.433f
+        dialog.show()
+        button.setOnClickListener { dialog.dismiss() }
+    }
+
+
+    // 9-1). show alert dialog
+    private fun showAlertDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Alert Dialog Title")
+            .setMessage("This is a simple message for the dialog")
+            .setPositiveButton("OK") {
+                dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") {
+                dialog, _ ->
+                dialog.dismiss()
+            }
+        val alertDialog = builder.create()
+        alertDialog.show()
+        //Dialog点击外部和点击物理返回键消失需要同时满足两个条件
+        alertDialog.setCanceledOnTouchOutside(false)
+        alertDialog.setCancelable(false)
+    }
+
 
     // 8. grant the permission
     private fun grantPermissionAndShowWindow() {
@@ -159,7 +265,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun createWindowWithTextView(context: Context) {
         // Create a WindowManager instance
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        mWindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         // Create a LayoutParams object to define the window attributes
         val layoutParams = WindowManager.LayoutParams(
@@ -175,43 +281,28 @@ class MainActivity : AppCompatActivity() {
         )
 
         // Set window gravity
-//        layoutParams.gravity = Gravity.CENTER
+        layoutParams.gravity = Gravity.CENTER
+        //Window外部区域变暗
+        layoutParams.dimAmount = 0.7f
+        layoutParams.flags = layoutParams.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
 
         // Create a TextView
-        val textView = TextView(context)
-        textView.text = "This is a sample TextView"
-        textView.background = ColorDrawable(Color.WHITE)
+        mWindowTextView = TextView(context)
+        mWindowTextView.text = "This is a sample TextView"
+        mWindowTextView.background = ColorDrawable(Color.WHITE)
         // You can customize other properties of the TextView here
 
         // Add the TextView to the WindowManager
-        windowManager.addView(textView, layoutParams)
+        mWindowManager.addView(mWindowTextView, layoutParams)
     }
 
 
-    private fun showWindow() {
-        val wm: WindowManager =
-            application.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val layoutParams = WindowManager.LayoutParams()
-        layoutParams.height = 400
-        layoutParams.width = 400
-        layoutParams.format = PixelFormat.RGBA_8888
-        layoutParams.flags =
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
-                layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            }
-
-            else -> layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE
+    private fun dismissWindow() {
+        try {
+            mWindowManager.removeViewImmediate(mWindowTextView)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-
-        val textView = TextView(this)
-        textView.background = ColorDrawable(Color.RED)
-        textView.text = "Hello WindowManager"
-
-        wm.addView(textView, layoutParams)
-
     }
 
     // 7. bind and unbind student service and register the callback
@@ -344,5 +435,21 @@ class MainActivity : AppCompatActivity() {
 //        unbindService(mServiceConnection)
 
         super.onDestroy()
+    }
+}
+
+
+class CustomDialog(context: Context) : Dialog(context) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+//        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(R.layout.custom_dialog_layout)
+
+        val messageTextView = findViewById<TextView>(R.id.messageTextView)
+        val okButton = findViewById<Button>(R.id.okButton)
+
+        okButton.setOnClickListener {
+            dismiss()
+        }
     }
 }

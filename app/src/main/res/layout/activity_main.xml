@@ -7,6 +7,38 @@
     tools:context=".MainActivity">
 
     <Button
+        android:id="@+id/button_show_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Alert Dialog"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_show_custom_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Custom Dialog"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_show_popupwindow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show popup window"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_show_dialog" />
+
+    <Button
+        android:id="@+id/button_toast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Toast"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_show_custom_dialog"  />
+
+    <Button
         android:id="@+id/button_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,8 +74,16 @@
         android:layout_height="wrap_content"
         android:text="@string/show_window"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tx_random_number" />
+
+    <Button
+        android:id="@+id/button_dismiss_window"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dismiss Window"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tx_random_number" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

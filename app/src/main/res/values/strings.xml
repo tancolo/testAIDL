@@ -6,4 +6,7 @@
     <string name="stop_service_bind">stop service with unBind</string>
     <string name="show_random_number">Show Random Number</string>
     <string name="show_window">Show Window</string>
+    <string name="show_dialog">Show Dialog</string>
+    <string name="show_popup_window">Show Popup Window</string>
+    <string name="show_toast">Show Toast</string>
 </resources>
