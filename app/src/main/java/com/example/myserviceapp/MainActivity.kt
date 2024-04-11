@@ -11,7 +11,10 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
+import android.os.Message
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
@@ -59,6 +62,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mWindowTextView: TextView
 
 //    private lateinit var mRemoteCallback: RemoteCallback.Stub
+
+    private lateinit var mTestHandlerTextView: TextView
+
+    private object handler: Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 //                unbindStudentServer()
 
                 // 7. unbind student callback server
-                unbindStudentCallbackService()
+//                unbindStudentCallbackService()
             }
         })
 
@@ -156,6 +168,16 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_toast).setOnClickListener {
             showToast()
         }
+
+        // 12. Handler-loop-message
+        findViewById<Button>(R.id.button_handler).setOnClickListener {
+            testHandler()
+        }
+
+    }
+
+    // 12. Handler-loop-message
+    private fun testHandler() {
 
     }
 

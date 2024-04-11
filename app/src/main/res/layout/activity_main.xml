@@ -39,6 +39,14 @@
         app:layout_constraintTop_toBottomOf="@id/button_show_custom_dialog"  />
 
     <Button
+        android:id="@+id/button_handler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test handler"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_show_popupwindow" />
+
+    <Button
         android:id="@+id/button_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
