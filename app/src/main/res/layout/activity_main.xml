@@ -55,6 +55,14 @@
         app:layout_constraintTop_toBottomOf="@id/button_toast"  />
 
     <Button
+        android:id="@+id/button_thread_handler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test Sub Thread Handler"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_handler" />
+
+    <Button
         android:id="@+id/button_start_service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

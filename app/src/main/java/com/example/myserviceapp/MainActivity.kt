@@ -77,6 +77,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 13. sub thread handler
+    private var subHandler: Handler? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -180,6 +183,35 @@ class MainActivity : AppCompatActivity() {
             testHandler()
         }
 
+        // 13. test sub thread handler
+        findViewById<Button>(R.id.button_thread_handler).setOnClickListener {
+            println("thread is ${Thread.currentThread().id}")
+            testSubThreadHandler()
+        }
+
+    }
+
+    // 13. test sub thread handler
+    private fun testSubThreadHandler() {
+        thread {
+            if (subHandler == null) {
+                Looper.prepare()
+                subHandler = Handler(object : Handler.Callback {
+                    override fun handleMessage(msg: Message): Boolean {
+                        println("handle msg: ${msg.arg1}, currentThread: ${Thread.currentThread().id}")
+                        return false
+                    }
+                })
+
+                // loop() in the sub thread
+                Looper.loop()
+            }
+        }
+
+        val message = Message.obtain()
+        message.arg1 = 111
+        println("send Msg, current thread: ${Thread.currentThread().id}")
+        subHandler?.sendMessage(message)
     }
 
     // 12. Handler-loop-message
