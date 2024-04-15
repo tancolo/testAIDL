@@ -42,7 +42,7 @@ import com.example.myserviceapp.service.MyBinder
 import com.example.myserviceapp.service.MyService
 import com.example.myserviceapp.testbinder.TestServer
 import com.example.myserviceapp.testbinder.TestServiceConnection
-import java.lang.Exception
+import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
@@ -64,11 +64,16 @@ class MainActivity : AppCompatActivity() {
 //    private lateinit var mRemoteCallback: RemoteCallback.Stub
 
     private lateinit var mTestHandlerTextView: TextView
+    private val handler = Handler(Looper.getMainLooper()) { msg ->
+        mTestHandlerTextView.text = msg.arg1.toString()
+        false
+    }
 
-    private object handler: Handler(Looper.getMainLooper()) {
+    // Object declaration, in fact, it is a static final class in java
+    object Handler02 : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-
+            //super.handleMessage(msg)
+            println("Handler02->handleMessage, msg: ${msg.arg1}")
         }
     }
 
@@ -170,6 +175,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 12. Handler-loop-message
+        mTestHandlerTextView = findViewById(R.id.txt_show_message)
         findViewById<Button>(R.id.button_handler).setOnClickListener {
             testHandler()
         }
@@ -178,7 +184,32 @@ class MainActivity : AppCompatActivity() {
 
     // 12. Handler-loop-message
     private fun testHandler() {
+        thread {
+            val message = Message.obtain()
+            message.arg1 = 20
+            //handler.sendMessage(message)
+            handler.sendMessageDelayed(message, 1000)
 
+            // new Message object with Message()
+            val msg01 = Message()
+            msg01.arg1 = 30
+            handler.sendMessageDelayed(msg01, 2000)
+
+            //send message with object declaration, subclass of Handler
+            val message02 = Message.obtain()
+            message02.arg1 = 2000
+            Handler02.sendMessage(message02)
+
+            // use post methods
+            handler.postDelayed({
+                println("postDelayed 3000mm")
+            }, 3000)
+
+        }
+
+        mTestHandlerTextView.post {
+            println("textView.width = ${mTestHandlerTextView.width}, height = ${mTestHandlerTextView.height}")
+        }
     }
 
     // 11. show toast
@@ -233,14 +264,10 @@ class MainActivity : AppCompatActivity() {
     // 9-1). show alert dialog
     private fun showAlertDialog() {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Alert Dialog Title")
-            .setMessage("This is a simple message for the dialog")
-            .setPositiveButton("OK") {
-                dialog, _ ->
+        builder.setTitle("Alert Dialog Title").setMessage("This is a simple message for the dialog")
+            .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") {
-                dialog, _ ->
+            }.setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
         val alertDialog = builder.create()
@@ -268,7 +295,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // code was created by ChatGPT
-    private val SYSTEM_ALERT_WINDOW_PERMISSION = 2038 // Define a constant for the permission request code
+    private val SYSTEM_ALERT_WINDOW_PERMISSION =
+        2038 // Define a constant for the permission request code
 
     // Handle the result of the permission request
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -474,4 +502,5 @@ class CustomDialog(context: Context) : Dialog(context) {
             dismiss()
         }
     }
+
 }
