@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
@@ -79,6 +80,10 @@ class MainActivity : AppCompatActivity() {
 
     // 13. sub thread handler
     private var subHandler: Handler? = null
+
+    // 14. HandlerThread
+    private lateinit var handlerThread: HandlerThread
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,6 +192,41 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_thread_handler).setOnClickListener {
             println("thread is ${Thread.currentThread().id}")
             testSubThreadHandler()
+        }
+
+        // 14. test Handler Thread
+        findViewById<Button>(R.id.button_handler_thread).setOnClickListener {
+            testHandlerThread()
+        }
+
+    }
+
+    // 14. test Handler Thread
+    private fun testHandlerThread() {
+        handlerThread = HandlerThread("handler_thread_001")
+        handlerThread.start()
+
+        val handler = Handler(handlerThread.looper) { msg ->
+            println("get message: ${msg.what}, thread id: ${Thread.currentThread().id}")
+            when (msg.what) {
+                1000 -> println("1000")
+                2000 -> println("2000")
+            }
+
+            false
+        }
+
+        thread(
+            name = "other thread",
+            isDaemon = true
+        ) {
+            println("sendMessage thread id: ${Thread.currentThread().id}")
+            val msg = Message()
+            msg.what = 1000
+            handler.sendMessage(msg)
+
+            val msg1 = handler.obtainMessage(2000)
+            handler.sendMessage(msg1)
         }
 
     }
