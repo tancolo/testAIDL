@@ -43,6 +43,7 @@ import com.example.myserviceapp.service.MyBinder
 import com.example.myserviceapp.service.MyService
 import com.example.myserviceapp.testbinder.TestServer
 import com.example.myserviceapp.testbinder.TestServiceConnection
+import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 
@@ -70,13 +71,29 @@ class MainActivity : AppCompatActivity() {
         false
     }
 
-    // Object declaration, in fact, it is a static final class in java
+    /** Object declaration, in fact, it is a static final class in java
+     *  object Handler02: Handler() {}, it is same with inner static class in Java
+     *  static class could access the function and variable of outer class.
+    **/
     object Handler02 : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             //super.handleMessage(msg)
             println("Handler02->handleMessage, msg: ${msg.arg1}")
         }
     }
+
+    /** 15. How to avoid memory leak with handler in Kotlin?
+     * 15-1) Sometime handler want to access the function or variable members of outer class,
+     * for avoiding memory leak, pass the object of Activity to MyHandler.
+     */
+    class MyHandler(activity: MainActivity) : Handler(Looper.getMainLooper()) {
+        private val mActivity = WeakReference<MainActivity>(activity)
+        override fun handleMessage(msg: Message) {
+            println("msg = ${msg.arg1}")
+            Toast.makeText(mActivity.get(), "msg arg1 is ${msg.arg1}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private lateinit var mMyHandler: MyHandler
 
     // 13. sub thread handler
     private var subHandler: Handler? = null
@@ -199,7 +216,23 @@ class MainActivity : AppCompatActivity() {
             testHandlerThread()
         }
 
+        // 15. How to avoid memory leak with handler in Kotlin?
+        findViewById<Button>(R.id.button_static_handler).setOnClickListener {
+            testStaticHandler()
+        }
+
     }
+
+    // 15. How to avoid memory leak with handler in Kotlin?
+    // test static handler
+    private fun testStaticHandler() {
+        mMyHandler = MyHandler(this)
+        Message.obtain().let {
+            it.arg1 = 250
+            mMyHandler.sendMessage(it)
+        }
+    }
+
 
     // 14. test Handler Thread
     private fun testHandlerThread() {
@@ -555,6 +588,9 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         Log.d(TAG, "MainActivity -> onDestroy()")
 //        unbindService(mServiceConnection)
+
+        // remove all message if it has
+        mMyHandler.removeCallbacksAndMessages(null)
 
         super.onDestroy()
     }
